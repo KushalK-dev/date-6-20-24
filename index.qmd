@@ -1,0 +1,45 @@
+---
+title: "2024 Populations"
+execute: 
+  echo: false
+  message: false
+  warning: false
+  label: setup
+---
+
+```{r}
+
+library(tidyverse)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+x <- read_csv("2024Populations.csv")
+
+long_data <- pivot_longer(x, cols = starts_with("pop"), names_to = "year", values_to = "population")
+
+long_data$year <- as.numeric(gsub("pop", "", long_data$year))
+filtered_data <- subset(long_data, year <= 2010)
+
+top_countries <- x %>% 
+  arrange(desc(pop2010)) %>%
+  slice(1:10) %>%
+  pull(country)
+
+subset_data <- filter(filtered_data, country %in% top_countries)
+
+
+ggplot(subset_data, aes(x = year, y = population, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Population Growth from 1980 to 2010 in 10 Countries",
+       x = "Year",
+       y = "Population") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 20, face = "bold"),
+        legend.title = element_blank(),
+        legend.position = "bottom",
+        legend.text = element_text(size = 10)) +
+  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+
+```
